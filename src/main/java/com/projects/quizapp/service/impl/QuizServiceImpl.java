@@ -17,35 +17,44 @@ import java.util.stream.Collectors;
 public class QuizServiceImpl implements QuizService {
 
     private final QuizRepository quizRepository;
+
     private final QuestionRepository questionRepository;
 
     @Autowired
     public QuizServiceImpl(final QuizRepository quizRepository, final QuestionRepository questionRepository) {
-        this.quizRepository=quizRepository;
-        this.questionRepository=questionRepository;
+        this.quizRepository = quizRepository;
+        this.questionRepository = questionRepository;
     }
 
     @Override
     public void createQuizzes(List<QuizRequest> quizzes) {
         quizRepository.saveAll(
-                quizzes.stream().map(quizRequest -> QuizEntity.of(generateId(quizRequest), "TODO")).collect(Collectors.toList()));
+                quizzes.stream()
+                       .map(quizRequest -> QuizEntity.of(generateId(quizRequest), "TODO"))
+                       .collect(Collectors.toList()));
     }
 
     @Override
     public QuizEntity getQuiz(Long quizId) {
-        return quizRepository.findById(quizId).orElseThrow(() -> new BadRequestException("No quiz found with the quiz id"));
+        return quizRepository.findById(quizId)
+                             .orElseThrow(() -> new BadRequestException("No quiz found with the quiz id"));
     }
 
     @Override
     public QuizEntity updateQuiz(QuizRequest quiz) {
-        QuizEntity quizEntity = quizRepository.findById(quiz.getId()).orElseThrow(() -> new BadRequestException("No quiz found with the quiz id"));
-        if(!quizEntity.isCanBeUpdated()) throw new BadRequestException("Quiz cannot be updated once shared");
-        return quizRepository.save(QuizEntity.of(quiz,quizEntity.getCreatedBy()));
+        QuizEntity quizEntity = quizRepository.findById(quiz.getId())
+                                              .orElseThrow(
+                                                      () -> new BadRequestException("No quiz found with the quiz id"));
+        if (!quizEntity.isCanBeUpdated())
+            throw new BadRequestException("Quiz cannot be updated once shared");
+        return quizRepository.save(QuizEntity.of(quiz, quizEntity.getCreatedBy()));
     }
 
     @Override
     public void deleteQuiz(Long quizId) {
-        quizRepository.delete(quizRepository.findById(quizId).orElseThrow(() -> new BadRequestException("No quiz found with the quiz id")));
+        quizRepository.delete(quizRepository.findById(quizId)
+                                            .orElseThrow(
+                                                    () -> new BadRequestException("No quiz found with the quiz id")));
     }
 
     private QuizRequest generateId(QuizRequest quizRequest) {
@@ -56,7 +65,7 @@ public class QuizServiceImpl implements QuizService {
             latestQuestionId.set(latestQuestionId.get() + 1);
             question.setId(latestQuestionId.get());
         });
-        quizRequest.setId(latestQuizId+1);
+        quizRequest.setId(latestQuizId + 1);
         return quizRequest;
     }
 }
