@@ -1,72 +1,66 @@
 package com.projects.quizapp.service.impl;
 
+import com.projects.quizapp.constants.ExceptionConstants;
 import com.projects.quizapp.entity.QuestionEntity;
 import com.projects.quizapp.entity.QuizResponseEntity;
 import com.projects.quizapp.exception.exceptions.BadRequestException;
 import com.projects.quizapp.model.request.QuizSubmitRequest;
-import com.projects.quizapp.model.response.QuizPlayerResponse;
-import com.projects.quizapp.repository.QuestionRepository;
+import com.projects.quizapp.model.response.QuizPlayerSubmissionResponse;
+import com.projects.quizapp.model.response.QuizResponse;
 import com.projects.quizapp.repository.QuizResponseRepository;
+import com.projects.quizapp.service.QuestionService;
+import com.projects.quizapp.service.QuizService;
 import com.projects.quizapp.service.QuizSubmissionService;
+import com.projects.quizapp.util.QuizMapperUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
+
+import static com.projects.quizapp.constants.GenericConstants.DEFAULT_ENTITY_ID;
 
 @Service
 public class QuizSubmissionServiceImpl implements QuizSubmissionService {
 
-    private final QuestionRepository questionRepository;
-
     private final QuizResponseRepository quizResponseRepository;
 
+    private final QuestionService questionService;
+
+    private final QuizService quizService;
+
     @Autowired
-    public QuizSubmissionServiceImpl(QuestionRepository questionRepository,
-                                     QuizResponseRepository quizResponseRepository) {
-        this.questionRepository = questionRepository;
+    public QuizSubmissionServiceImpl(final QuizResponseRepository quizResponseRepository,
+                                     final QuestionService questionService,
+                                     final QuizService quizService) {
+        this.questionService = questionService;
         this.quizResponseRepository = quizResponseRepository;
+        this.quizService = quizService;
     }
 
     @Override
-    public QuizPlayerResponse submitResponse(QuizSubmitRequest submitRequest) {
-        List<QuestionEntity> questionEntities = questionRepository.findQuestionsByQuizIdAndIdsIn(
-                submitRequest.getQuizId(), submitRequest.getQuizQuestionToResponseMap().keySet())
-                                                                  .orElseThrow(() -> new BadRequestException(
-                                                                          "No quiz found with the quiz id"));
+    public QuizPlayerSubmissionResponse submitResponse(QuizSubmitRequest submitRequest, String submittedBy) {
+        submitRequest.setSubmittedBy(submittedBy);
+        List<QuestionEntity> questionEntities =
+                questionService.findQuestionsByQuizIdAndQuestionIds(submitRequest.getQuizId(),
+                                                                    submitRequest.getQuizQuestionToResponseMap()
+                                                                                 .keySet());
+        Long latestQuizId = quizResponseRepository.findResponseWithLargestId().orElse(DEFAULT_ENTITY_ID);
         QuizResponseEntity quizResponseEntity =
-                quizResponseRepository.save(buildQuizResponseEntity(submitRequest, questionEntities));
-        return QuizPlayerResponse.builder().score(quizResponseEntity.getScore()).build();
+                quizResponseRepository.save(
+                        QuizMapperUtil.calculateAndBuildQuizResponseEntity(submitRequest, questionEntities,
+                                                                           latestQuizId));
+        return QuizPlayerSubmissionResponse.builder().score(quizResponseEntity.getScore()).build();
     }
 
     @Override
     public List<QuizResponseEntity> getQuizSubmissions(Long quizId) {
         return quizResponseRepository.findAllByQuizId(quizId)
                                      .orElseThrow(() -> new BadRequestException(
-                                             "No submissions found for this quiz id : " + quizId));
+                                             ExceptionConstants.NO_SUBMISSIONS_FOUND_ERROR_MESSAGE + quizId));
     }
 
-    private QuizResponseEntity buildQuizResponseEntity(QuizSubmitRequest submitRequest,
-                                                       List<QuestionEntity> questionEntities) {
-        Long id = quizResponseRepository.findResponseWithLargestId().orElse(0L) + 1;
-        int score = questionEntities.stream()
-                                    .filter(questionEntity -> submitRequest.getQuizQuestionToResponseMap()
-                                                                           .get(questionEntity.getId())
-                                                                           .containsAll(questionEntity.getAnswers()) &&
-                                                              questionEntity.getAnswers()
-                                                                            .containsAll(
-                                                                                    submitRequest.getQuizQuestionToResponseMap()
-                                                                                                 .get(questionEntity.getId())))
-                                    .mapToInt(QuestionEntity::getMaxMarks)
-                                    .sum();
-        return QuizResponseEntity.builder()
-                                 .id(id)
-                                 .quizId(submitRequest.getQuizId())
-                                 .userName(submitRequest.getSubmittedBy())
-                                 .submittedAt(LocalDateTime.now(ZoneOffset.UTC))
-                                 .score(score)
-                                 .responseList(submitRequest.getQuizQuestionToResponseMap())
-                                 .build();
+    @Override
+    public QuizResponse getQuizForPlayer(Long quizId) {
+        return quizService.getQuizForPlayer(quizId);
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @Slf4j
@@ -23,9 +24,9 @@ public class QuizController {
     }
 
     @PostMapping("/quizzes")
-    public BaseResponse createQuizzes(@RequestBody List<QuizRequest> quizzes){
+    public BaseResponse createQuizzes(@RequestBody List<QuizRequest> quizzes, Principal principal){
         log.info("Received request to create quizzes : {}",quizzes);
-        quizService.createQuizzes(quizzes);
+        quizService.createQuizzes(quizzes, principal.getName());
         return BaseResponse.ofSuccess();
     }
 
@@ -36,15 +37,21 @@ public class QuizController {
     }
 
     @PutMapping("/quiz")
-    public BaseResponse updateQuiz(@RequestBody QuizRequest quiz){
-        log.info("Received request to update quiz : {}",quiz);
+    public BaseResponse updateQuiz(@RequestBody QuizRequest quiz, Principal principal){
+        log.info("Received request to update quiz with id : {} \n requested by : {}",quiz.getId(),principal.getName());
         return BaseResponse.ofSuccess(quizService.updateQuiz(quiz));
     }
 
     @DeleteMapping("/quiz")
-    public BaseResponse deleteQuiz(@RequestParam("quiz_id") Long quizId){
-        log.info("Received request to delete quiz : {}",quizId);
+    public BaseResponse deleteQuiz(@RequestParam("quiz_id") Long quizId, Principal principal){
+        log.info("Received request to delete quiz : {} \n requested by : {}",quizId, principal.getName());
         quizService.deleteQuiz(quizId);
         return BaseResponse.ofSuccess();
+    }
+
+    @GetMapping("/quiz/link")
+    public BaseResponse getShareableQuizLink(@RequestParam("quiz_id") Long quizId){
+        log.info("Received request to retrieve quiz for quiz id : {}",quizId);
+        return BaseResponse.ofSuccess(quizService.getShareableLinkAndUpdateQuiz(quizId));
     }
 }

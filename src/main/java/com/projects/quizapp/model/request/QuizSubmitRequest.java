@@ -1,5 +1,6 @@
 package com.projects.quizapp.model.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Data;
@@ -19,5 +20,6 @@ public class QuizSubmitRequest {
     private String submittedBy;
 
     @NotNull
+    @JsonProperty("question_response_map")
     private Map<Long, List<Integer>> quizQuestionToResponseMap;
 }

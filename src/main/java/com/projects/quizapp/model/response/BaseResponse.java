@@ -1,6 +1,5 @@
 package com.projects.quizapp.model.response;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Data;
@@ -9,7 +8,6 @@ import org.springframework.http.HttpStatus;
 @Data
 @Builder(toBuilder = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class BaseResponse {
 
     private Boolean success;
