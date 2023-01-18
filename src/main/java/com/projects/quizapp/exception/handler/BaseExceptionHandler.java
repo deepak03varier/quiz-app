@@ -2,6 +2,7 @@ package com.projects.quizapp.exception.handler;
 
 import com.projects.quizapp.exception.exceptions.BadRequestException;
 import com.projects.quizapp.exception.exceptions.InternalServerException;
+import com.projects.quizapp.exception.exceptions.UnauthorizedException;
 import com.projects.quizapp.model.response.BaseResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -24,5 +25,12 @@ public class BaseExceptionHandler {
     @ResponseBody
     public BaseResponse handleBadRequestException(final InternalServerException exception) {
         return BaseResponse.ofFailure(HttpStatus.INTERNAL_SERVER_ERROR.value(), exception.getMessage());
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ResponseBody
+    public BaseResponse handleUnauthorizedException(final UnauthorizedException exception) {
+        return BaseResponse.ofFailure(HttpStatus.UNAUTHORIZED.value(), exception.getMessage());
     }
 }

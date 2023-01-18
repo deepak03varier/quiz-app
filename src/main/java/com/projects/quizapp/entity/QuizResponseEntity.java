@@ -2,22 +2,31 @@ package com.projects.quizapp.entity;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-//import jakarta.persistence.*;
-import javax.persistence.*;
+import com.projects.quizapp.entity.dialects.ObjectType;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
 
 @Entity
 @Table(name = "quiz_response_entity")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder(toBuilder = true)
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+@TypeDefs({@TypeDef(name = "ObjectType", typeClass = ObjectType.class)})
 public class QuizResponseEntity {
 
     @Id
-    @GeneratedValue
     private Long id;
 
     private Long quizId;
@@ -28,6 +37,6 @@ public class QuizResponseEntity {
 
     private Integer score;
 
-//    @MapKey
-//    private Map<Long, List<Integer>> responseList;
+    @Type(type = "ObjectType")
+    private Object responseList;
 }

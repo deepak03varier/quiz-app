@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.projects.quizapp.entity.dialects.IntegerListUserType;
 import com.projects.quizapp.entity.dialects.StringListUserType;
-import com.projects.quizapp.model.request.QuizQuestion;
+import com.projects.quizapp.model.request.QuizQuestionRequest;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,8 +16,6 @@ import org.hibernate.annotations.TypeDefs;
 
 import javax.persistence.*;
 import java.util.List;
-
-//import jakarta.persistence.*;
 
 @Entity
 @Table(name = "question_entity")
@@ -49,7 +47,7 @@ public class QuestionEntity {
                 nullable = false)
     private QuizEntity quiz;
 
-    public static QuestionEntity of(QuizQuestion question, QuizEntity quizEntity) {
+    public static QuestionEntity of(QuizQuestionRequest question, QuizEntity quizEntity) {
         return QuestionEntity.builder()
                              .id(question.getId())
                              .description(question.getDescription())
