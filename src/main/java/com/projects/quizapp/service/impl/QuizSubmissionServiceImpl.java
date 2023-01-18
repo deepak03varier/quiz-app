@@ -44,11 +44,11 @@ public class QuizSubmissionServiceImpl implements QuizSubmissionService {
                 questionService.findQuestionsByQuizIdAndQuestionIds(submitRequest.getQuizId(),
                                                                     submitRequest.getQuizQuestionToResponseMap()
                                                                                  .keySet());
-        Long latestQuizId = quizResponseRepository.findResponseWithLargestId().orElse(DEFAULT_ENTITY_ID);
+        Long latestQuizSubmissionId = quizResponseRepository.findResponseWithLargestId().orElse(DEFAULT_ENTITY_ID);
         QuizResponseEntity quizResponseEntity =
                 quizResponseRepository.save(
                         QuizMapperUtil.calculateAndBuildQuizResponseEntity(submitRequest, questionEntities,
-                                                                           latestQuizId));
+                                                                           latestQuizSubmissionId));
         return QuizPlayerSubmissionResponse.builder().score(quizResponseEntity.getScore()).build();
     }
 
