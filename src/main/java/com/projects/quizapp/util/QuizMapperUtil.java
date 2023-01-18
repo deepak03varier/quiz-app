@@ -14,7 +14,7 @@ public class QuizMapperUtil {
 
     public static QuizResponseEntity calculateAndBuildQuizResponseEntity(QuizSubmitRequest submitRequest,
                                                                          List<QuestionEntity> questionEntities,
-                                                                         Long newQuizId) {
+                                                                         Long latestQuizSubmissionId) {
         int score = questionEntities.stream()
                                     .filter(questionEntity -> submitRequest.getQuizQuestionToResponseMap()
                                                                            .get(questionEntity.getId())
@@ -26,7 +26,7 @@ public class QuizMapperUtil {
                                     .mapToInt(QuestionEntity::getMaxMarks)
                                     .sum();
         return QuizResponseEntity.builder()
-                                 .id(newQuizId + 1)
+                                 .id(latestQuizSubmissionId + 1)
                                  .quizId(submitRequest.getQuizId())
                                  .userName(submitRequest.getSubmittedBy())
                                  .submittedAt(LocalDateTime.now(ZoneOffset.UTC))
